@@ -1,51 +1,25 @@
-class Board
-	attr_accessor :board
+class Square
+	attr_accessor :position, :next_moves, :move_history
 
-	def initialize
-		@board = []
-		for n in 0..7
-			for x in 0..7
-				@board.push([n,x])
-			end
-		end
+	def initialize(position)
+		@position = position
+		@next_moves = set_moves(position)
+		@move_history = []
 	end
 
-	def display
-		count = 56
-		8.times do |line|
-			8.times do |squre|
-				print @board[count]
-				count += 1
-			end
-			count -= 16
-			print "\n"
-		end
-	end
-end
-
-class Knight
-
-	def initialize
-		@traveled = []
-		
-	end
-
-def knight_moves(start = [0, 0], finish = [7, 7])
-		
-		return start if start == finish
-		print start 
-		@traveled << start
-		start_x = start[0]
-		start_y = start[1]
+	def set_moves(position)
+		start_x = position[0]
+		start_y = position[1]
 		ones_array = [-1, 1]
 		twos_array = [-2, 2]
+		next_moves = []
 
 		ones_array.map do |n|
 			new_x = n + start_x
 			twos_array.map do |n|
 				new_y = n + start_y
-				if new_x.between?(0,7) && new_y.between?(0,7) && @traveled.include?([new_x, new_y]) == false
-					knight_moves([new_x, new_y], finish)
+				if new_x.between?(0,7) && new_y.between?(0,7)
+					next_moves << [new_x, new_y]
 				end
 			end
 		end		
@@ -54,19 +28,58 @@ def knight_moves(start = [0, 0], finish = [7, 7])
 			new_x = n + start_x
 			ones_array.map do |n|
 				new_y = n + start_y
-				if new_x.between?(0,7) && new_y.between?(0,7) && @traveled.include?([new_x, new_y]) == false
-					knight_moves([new_x, new_y], finish)
+				if new_x.between?(0,7) && new_y.between?(0,7)
+					next_moves << [new_x, new_y]
 				end
 			end
 		end
 
-
-		
-		return nil
+		return next_moves
 	end
 
 end
 
-bord = Board.new
-knight = Knight.new
-puts knight.knight_moves([2,2], [3,4])
+class Game
+
+	def initialize
+		@board = []
+		for n in 0..7
+			for q in 0..7
+				square = Square.new([n, q])
+				@board.push(square)
+			end
+		end
+		@paths = Array.new
+	end
+
+	def display
+		p @paths
+	end
+
+	def knight_moves(start, finish)
+	current_position = @board.select {|square| square.position == start}
+	already_checked = []
+	queue = [start]
+	until queue.empty?
+		checking = queue.shift
+		checking = @board.select {|square| square.position == checking}
+		already_checked << checking[0].position
+
+		if checking[0].position == finish
+			p checking
+			return checking
+		else
+			checking[0].next_moves.each do |move|
+				square = @board.select {|square| square.position == move}
+				square[0].move_history << checking[0].position
+				queue << move unless already_checked.include?(move)
+			end
+		end
+	end
+    		
+	end
+
+end
+
+stuff = Game.new
+stuff.knight_moves([2, 1], [0, 7])
