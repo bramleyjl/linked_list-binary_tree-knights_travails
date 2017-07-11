@@ -1,13 +1,12 @@
-class Square
-	attr_accessor :position, :next_moves, :move_history
+class Knight
+	attr_accessor :position, :next_moves, :parent
 
-	def initialize(position)
+	def initialize(position, parent = [])
 		@position = position
-		@next_moves = set_moves(position)
-		@move_history = []
+		@parent = parent
 	end
 
-	def set_moves(position)
+	def set_moves
 		start_x = position[0]
 		start_y = position[1]
 		ones_array = [-1, 1]
@@ -45,36 +44,33 @@ class Game
 		@board = []
 		for n in 0..7
 			for q in 0..7
-				square = Square.new([n, q])
+				square = [n, q]
 				@board.push(square)
 			end
 		end
-		@paths = Array.new
 	end
 
 	def display
-		p @paths
+
 	end
 
 	def knight_moves(start, finish)
-	current_position = @board.select {|square| square.position == start}
-	already_checked = []
-	queue = [start]
+	start_node = Knight.new(start)
+	queue = [start_node]
+
 	until queue.empty?
 		checking = queue.shift
-		checking = @board.select {|square| square.position == checking}
-		already_checked << checking[0].position
-
-		if checking[0].position == finish
-			p checking
+		if checking.position == finish
+			p checking.position
 			return checking
 		else
-			checking[0].next_moves.each do |move|
-				square = @board.select {|square| square.position == move}
-				square[0].move_history << checking[0].position
-				queue << move unless already_checked.include?(move)
+			next_moves = checking.set_moves
+			next_moves.each do |move|
+				move = Knight.new(move, checking)
+				queue << move unless queue.include?(move)
 			end
 		end
+
 	end
     		
 	end
@@ -82,4 +78,4 @@ class Game
 end
 
 stuff = Game.new
-stuff.knight_moves([2, 1], [0, 7])
+p stuff.knight_moves([0, 0], [3, 7])

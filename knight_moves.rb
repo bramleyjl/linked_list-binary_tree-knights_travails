@@ -45,7 +45,7 @@ class Game
 		@board = []
 		for n in 0..7
 			for q in 0..7
-				square = Square.new([n, q])
+				square = [n, q]
 				@board.push(square)
 			end
 		end
@@ -59,11 +59,12 @@ class Game
 	def knight_moves(start, finish)
 	current_position = @board.select {|square| square.position == start}
 	already_checked = []
-	queue = [start]
+	queue = [] << start
 	until queue.empty?
 		checking = queue.shift
+		already_checked << checking unless already_checked.include?(checking)
 		checking = @board.select {|square| square.position == checking}
-		already_checked << checking[0].position
+		checking[0].move_history << checking[0].position
 
 		if checking[0].position == finish
 			p checking
@@ -71,10 +72,11 @@ class Game
 		else
 			checking[0].next_moves.each do |move|
 				square = @board.select {|square| square.position == move}
-				square[0].move_history << checking[0].position
-				queue << move unless already_checked.include?(move)
+				square[0].move_history << checking[0].move_history 
+				queue << move unless already_checked.include?(move) || queue.include?(move)
 			end
 		end
+
 	end
     		
 	end
@@ -82,4 +84,4 @@ class Game
 end
 
 stuff = Game.new
-stuff.knight_moves([2, 1], [0, 7])
+stuff.knight_moves([0, 0], [0, 0])
